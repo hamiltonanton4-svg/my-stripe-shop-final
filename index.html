@@ -1,56 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Stripe Shop</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-10">
-    <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold mb-4">Awesome Product</h1>
-        <p class="text-gray-600 mb-6">Get this amazing item for just $20.00!</p>
-        
-        <button id="checkout-button" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">
-            Buy Now
-        </button>
-        
-        <p id="error-message" class="text-red-500 mt-4 hidden"></p>
-    </div>
+const response = await fetch('/.netlify/functions/create-checkout', { method: 'POST' });
 
-    <script>
-        const checkoutButton = document.getElementById('checkout-button');
-        const errorMessage = document.getElementById('error-message');
+// This will help us see the "Real" error
+if (!response.ok) {
+    const text = await response.text();
+    console.log("Server sent this instead of JSON:", text); // Check your console for this!
+    throw new Error("Server didn't return JSON. Check the console log!");
+}
 
-        checkoutButton.addEventListener('click', async () => {
-            checkoutButton.disabled = true;
-            checkoutButton.innerText = 'Loading...';
-
-            try {
-                // IMPORTANT: We use a relative path here so it works on ANY Netlify URL
-                const response = await fetch('/.netlify/functions/create-checkout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Check the Netlify Functions tab!');
-                }
-
-                const { url } = await response.json();
-                window.location.href = url; // Send user to Stripe
-                
-            } catch (err) {
-                console.error('Error:', err);
-                errorMessage.innerText = err.message;
-                errorMessage.classList.remove('hidden');
-                checkoutButton.disabled = false;
-                checkoutButton.innerText = 'Buy Now';
-            }
-        });
-    </script>
-</body>
-</html>
+const data = await response.json();
